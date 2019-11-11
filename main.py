@@ -1,46 +1,57 @@
-import tensorflow as tf
-import os, time, argparse
+
+import os, time, argparse, logging
 from datetime import datetime
 from pathlib import Path
+
 from tqdm import trange
+import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+
 from models import Encoder, Decoder, Transformer
 from masks import create_masks
 from processing import Preprocess
 
 
+# Logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+logger.info('Reading Arguments')
+
 parser = argparse.ArgumentParser()
 
 # Preprocessing ---------------------------------------------------------------
-parser.add_argument('--batch_size', type=int, default=64)
-parser.add_argument('--max_length', type=int, default=40)
-parser.add_argument('--buffer_size', type=int, default=20000)
+parser.add_argument('--batch_size', type=int, default=32)
+parser.add_argument('--max_length', type=int, default=20)
+parser.add_argument('--buffer_size', type=int, default=2000)
 
 # Model -----------------------------------------------------------------------
-parser.add_argument('--num_layers',  type=int, default=4)
-parser.add_argument('--d_model', type=int, default=128)
-parser.add_argument('--dff', type=int, default=512)
-parser.add_argument('--num_heads',  type=int, default=8)
-parser.add_argument('--dropout_rate', type=float, default=0.1)
+parser.add_argument('--num_layers',  type=int, default=2)
+parser.add_argument('--d_model', type=int, default=64)
+parser.add_argument('--dff', type=int, default=256)
+parser.add_argument('--num_heads',  type=int, default=4)
+parser.add_argument('--dropout_rate', type=float, default=0.05)
 
 # Training --------------------------------------------------------------------
 parser.add_argument('--epochs', type=int, default=5)
 
 # Saving / Logging ------------------------------------------------------------
 parser.add_argument('--log_dir', type=str, default='./logs/')
-parser.add_argument("--log_freq", type=int, default=5)
+parser.add_argument("--log_freq", type=int, default=2)
 parser.add_argument('--checkpoint_dir', type=str, default='./checkpoints/')
 parser.add_argument('--checkpoint_freq',type=int, default=2)
 parser.add_argument('--extension', type=str, default=None)
 
 cfg = parser.parse_args()
 
-
 class CustomSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
     def __init__(self, d_model, warmup_steps=4000):
         super(CustomSchedule, self).__init__()
         
+        logger.info('Initializing CustomSchedule')
+
         self.d_model = d_model
         self.d_model = tf.cast(self.d_model, tf.float32)
 
@@ -56,6 +67,8 @@ class CustomSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
 class TMLU():
     def __init__(self):
         super(TMLU, self).__init__()
+
+        logger.info('Initializing TMLU')
 
         self.global_step = 0
 
@@ -89,6 +102,8 @@ class TMLU():
         self.ckpt_manager = tf.train.CheckpointManager(self.ckpt, checkpoint_path, max_to_keep=5)
 
     def build_writers(self):
+
+        logger.info('Initializing Build Writers')
 
         if not Path(cfg.checkpoint_dir).is_dir():
             os.mkdir(cfg.checkpoint_dir)
@@ -194,7 +209,7 @@ class TMLU():
 
     def train(self):
         
-        print("Training\n------------------------------------------")
+        logger.info('Training')
 
         # if a checkpoint exists, restore the latest checkpoint.
         if self.ckpt_manager.latest_checkpoint:
@@ -218,7 +233,8 @@ class TMLU():
             print ("Real translation: this is a problem we have to solve .")
 
     def test(self):
-        print("Testing\n------------------------------------------")
+        
+        logger.info('Testing')
 
         # if a checkpoint exists, restore the latest checkpoint.
         if self.ckpt_manager.latest_checkpoint:

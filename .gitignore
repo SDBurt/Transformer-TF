@@ -7,5 +7,6 @@ logs/
 saves/
 data/
 .venv
+venv
 .vscode
 

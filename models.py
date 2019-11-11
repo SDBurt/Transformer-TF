@@ -1,11 +1,21 @@
+import logging
+
 import tensorflow as tf
+
 from layers import EncoderLayer, DecoderLayer, MultiHeadAttention
 from utils import positional_encoding
+
+# Logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 class Encoder(tf.keras.layers.Layer):
   def __init__(self, num_layers, d_model, num_heads, dff, input_vocab_size, 
                rate=0.1):
     super(Encoder, self).__init__()
+
+    logger.info('Initializing Encoder')
 
     self.d_model = d_model
     self.num_layers = num_layers
@@ -40,6 +50,8 @@ class Decoder(tf.keras.layers.Layer):
   def __init__(self, num_layers, d_model, num_heads, dff, target_vocab_size, 
                rate=0.1):
     super(Decoder, self).__init__()
+
+    logger.info('Initializing Decoder')
 
     self.d_model = d_model
     self.num_layers = num_layers
@@ -76,6 +88,8 @@ class Decoder(tf.keras.layers.Layer):
 class Transformer(tf.keras.Model):
     def __init__(self, cfg):
         super(Transformer, self).__init__()
+
+        logger.info('Initializing Transformer')
 
         self.encoder = Encoder(cfg.num_layers, cfg.d_model, cfg.num_heads, cfg.dff, 
                             cfg.input_vocab_size, cfg.dropout_rate)

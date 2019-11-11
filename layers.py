@@ -1,5 +1,14 @@
+import logging
+
 import tensorflow as tf
+
 from utils import scaled_dot_product_attention
+
+
+# Logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 def point_wise_feed_forward_network(d_model, dff):
     return tf.keras.Sequential([
@@ -10,6 +19,9 @@ def point_wise_feed_forward_network(d_model, dff):
 class MultiHeadAttention(tf.keras.layers.Layer):
     def __init__(self, d_model, num_heads):
         super(MultiHeadAttention, self).__init__()
+
+        logger.info('Initializing MultiHeadAttenion')
+
         self.num_heads = num_heads
         self.d_model = d_model
 
@@ -59,11 +71,13 @@ class EncoderLayer(tf.keras.layers.Layer):
     def __init__(self, d_model, num_heads, dff, rate=0.1):
         super(EncoderLayer, self).__init__()
 
+        logger.info('Initializing EncodingLayer')
+
         self.mha = MultiHeadAttention(d_model, num_heads)
         self.ffn = point_wise_feed_forward_network(d_model, dff)
 
-        self.layernorm1 = tf.keras.layers.experimental.LayerNormalization(epsilon=1e-6)
-        self.layernorm2 = tf.keras.layers.experimental.LayerNormalization(epsilon=1e-6)
+        self.layernorm1 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
+        self.layernorm2 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
         
         self.dropout1 = tf.keras.layers.Dropout(rate)
         self.dropout2 = tf.keras.layers.Dropout(rate)
@@ -84,14 +98,16 @@ class DecoderLayer(tf.keras.layers.Layer):
     def __init__(self, d_model, num_heads, dff, rate=0.1):
         super(DecoderLayer, self).__init__()
 
+        logger.info('Initializing DecoderLayer')
+
         self.mha1 = MultiHeadAttention(d_model, num_heads)
         self.mha2 = MultiHeadAttention(d_model, num_heads)
 
         self.ffn = point_wise_feed_forward_network(d_model, dff)
     
-        self.layernorm1 = tf.keras.layers.experimental.LayerNormalization(epsilon=1e-6)
-        self.layernorm2 = tf.keras.layers.experimental.LayerNormalization(epsilon=1e-6)
-        self.layernorm3 = tf.keras.layers.experimental.LayerNormalization(epsilon=1e-6)
+        self.layernorm1 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
+        self.layernorm2 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
+        self.layernorm3 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
         
         self.dropout1 = tf.keras.layers.Dropout(rate)
         self.dropout2 = tf.keras.layers.Dropout(rate)

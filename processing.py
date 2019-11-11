@@ -17,6 +17,7 @@ class Preprocess():
         # Use TFDS to load the Portugese-English translation dataset from the TED Talks Open Translation Project.
         examples, metadata = tfds.load('ted_hrlr_translate/pt_to_en',
                                         with_info=True, as_supervised=True)
+                                        
         self.train_examples, self.val_examples = examples['train'], examples['validation']
 
         # Create a custom subwords tokenizer from the training dataset. 
