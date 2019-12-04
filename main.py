@@ -12,11 +12,12 @@ from models import Encoder, Decoder, Transformer
 from masks import create_masks
 from processing import Preprocess
 
+import os
+CUDA_VISIBLE_DEVICES=0
 
 # Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 
 logger.info('Reading Arguments')
 
@@ -207,14 +208,20 @@ class TMLU():
         print('Predicted translation: {}'.format(predicted_sentence))
         
 
+    def checkpoint(self):
+
+        self.ckpt.restore(self.ckpt_manager.latest_checkpoint)
+        if self.ckpt_manager.latest_checkpoint:
+            print("Restored from {}".format(self.ckpt_manager.latest_checkpoint))
+        else:
+            print("Initializing from scratch.")
+
     def train(self):
         
         logger.info('Training')
 
-        # if a checkpoint exists, restore the latest checkpoint.
-        if self.ckpt_manager.latest_checkpoint:
-            self.ckpt.restore(self.ckpt_manager.latest_checkpoint)
-            print ('Latest checkpoint restored!!')
+        self.checkpoint()
+
 
         for epoch in trange(cfg.epochs):
             
@@ -227,7 +234,7 @@ class TMLU():
                 
             if (epoch + 1) % 5 == 0:
                 ckpt_save_path = self.ckpt_manager.save()
-                # print ('Saving checkpoint for epoch {} at {}'.format(epoch+1, ckpt_save_path))
+                print ('Saving checkpoint for epoch {} at {}'.format(epoch+1, ckpt_save_path))
                 
             self.translate("este é um problema que temos que resolver.")
             print ("Real translation: this is a problem we have to solve .")
@@ -236,22 +243,19 @@ class TMLU():
         
         logger.info('Testing')
 
-        # if a checkpoint exists, restore the latest checkpoint.
-        if self.ckpt_manager.latest_checkpoint:
-            self.ckpt.restore(self.ckpt_manager.latest_checkpoint)
-            print ('Latest checkpoint restored!!')
+        self.checkpoint()
 
         self.translate("este é um problema que temos que resolver.")
-        print ("Real translation: this is a problem we have to solve .")
+        print("Real translation: this is a problem we have to solve .")
 
         self.translate("os meus vizinhos ouviram sobre esta ideia.")
-        print ("Real translation: and my neighboring homes heard about this idea .")
+        print("Real translation: and my neighboring homes heard about this idea .")
 
         self.translate("vou então muito rapidamente partilhar convosco algumas histórias de algumas coisas mágicas que aconteceram.")
-        print ("Real translation: so i 'll just share with you some stories very quickly of some magical things that have happened .")
+        print("Real translation: so i 'll just share with you some stories very quickly of some magical things that have happened .")
 
         self.translate("este é o primeiro livro que eu fiz.")
-        print ("Real translation: this is the first book i've ever done.")
+        print("Real translation: this is the first book i've ever done.")
 
 
 
